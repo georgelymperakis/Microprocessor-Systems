@@ -1,0 +1,181 @@
+;Exercise 4
+;In this exercise we going to resemble the 
+;operation of an Integrated Circuit using the mP 8085 !
+
+MAIN:
+	
+	LDA 2000H    ;Read Input
+	MOV B,A
+
+	CALL G10	;Start Calculating all the operations
+	MOV A,H
+	CMA
+	STA 3000H 	;Print the output
+	JMP MAIN	;Read the Input again!
+
+;The function isolate the 2 LSB bits and put one in reg B
+;and the other in reg A 	
+FUNC:					
+	ANI 03H
+	MOV B,A
+	ANI 01H
+	MOV C,A
+	MOV A,B
+	RRC
+	ANI 01H
+
+	RET
+;The function produce the result A0^B0 = w1 using the function Func
+G10:
+	PUSH PSW
+	
+	CALL FUNC
+	XRA C
+	MOV H,A
+	
+	POP PSW
+	CALL G11
+	RET
+
+;The function produce the result A1^B1 = w2 using the function Func
+G11:
+	PUSH PSW
+
+	RRC
+	RRC
+	CALL FUNC
+
+	XRA C	
+	RLC
+	ANI 02H
+	ORA H
+	MOV H,A
+
+	POP PSW
+	CALL G12
+	RET
+
+;The function produce the result A2*B2 = w3 using the function Func
+G12:
+	PUSH PSW
+	
+	RRC
+	RRC
+	RRC
+	RRC	
+	CALL FUNC
+
+	ANA C
+	RLC
+	RLC
+	ANI 04H
+	ORA H
+	MOV H,A
+
+	POP PSW
+	CALL G13
+	RET
+
+;The function produce the result A3*B3=w4 using the function Func
+G13:
+	PUSH PSW
+	
+	RRC
+	RRC
+	RRC
+	RRC	
+	RRC
+	RRC
+	CALL FUNC
+
+	ANA C
+	RLC
+	RLC
+	RLC
+	ANI 08H
+	ORA H
+	MOV H,A
+
+	POP PSW
+	CALL G20
+	RET
+
+;The function produce the result w1^w2 using the function Func
+G20:
+	PUSH PSW
+
+	MOV L,H
+	MOV A,L
+	RRC
+	MOV L,A
+	
+	
+	MOV A,H
+	RRC
+	ANI 01H
+	MOV B,H
+	MOV C,A
+	MOV A,B
+	ANI 01H
+	XRA C
+	RAR
+	MOV A,L
+	
+	RAL
+	ANI 0FH
+	MOV H,A
+
+	POP PSW
+	CALL G21
+	RET
+
+;The function produce the result w3+w4 using the function Func
+G21:
+	PUSH PSW
+
+	MOV A,H
+	RRC
+	RRC
+	ANI 01H
+	
+	MOV B,A
+	MOV A,H
+	RRC
+	RRC
+	RRC
+	ANI 01H
+	ORA B
+
+	MOV B,A
+	MOV L,H
+	MOV A,L
+	ANI 03H
+	MOV L,A
+
+	MOV A,H
+	RRC
+	RRC
+	RRC
+	MOV C,A
+	MOV A,B
+	RAR
+	MOV A,C
+	RAL
+	MOV C,A
+	MOV A,L
+	RAR
+	RAR
+	MOV A,C
+	RAL
+	MOV C,A
+	MOV A,L
+	RAR
+	MOV A,C
+	RAL
+	ANI 0FH
+	MOV H,A
+
+	POP PSW
+	RET
+	
+END

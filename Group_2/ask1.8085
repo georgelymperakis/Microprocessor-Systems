@@ -1,0 +1,84 @@
+;Exercise 1
+;In this exercise we are going to save numbers from 0 to 255 in memory while 
+;counting number of 1s and numbers in rang [10H,60H] 
+;The program follows the following algorithm:
+;
+;   1	initializes the number memory counter number of ones and
+;	number of numbers in range [10H, 60H] to zero.
+;
+;   2	stores the current number drom accumulator to memory.
+;
+;   3	stores the number to E to access later.
+;
+;   4 right shifts accumulator to carry and checks:
+;		-if carry is one it increments BC and checks:
+;			-if accumulator is zero it means it counted all ones
+;			 so it goes to step 5.
+;			-else it repeats step 4.	
+;		
+;
+;   5	after that it restores the number and checks:
+;		- if the number is smaller than 10 it goes to step 6.
+;		- if the number is greater than 10 it checks :
+;			-if the number is smaller than 60 increments D
+;			 and goes to step 6.
+;			-else it goes to step 6 without incrementing D.
+;
+;   6	it increments the memory counter and the accumulator (current number)
+;	and checks:
+;	 	- if current number is greater than 255 = FFH(*)  exits
+;    		- else repeats steps 2 - 6
+;
+;
+;  (*) because 256 = 100H is 3 digit number our code checks if
+;	current number is equal to zero. This is not an issue as the check
+; 	happens after the first incrementation of current number, which means 
+;	zero will not be checked and so the comparizon is valid. 
+
+
+	IN 10H
+	MVI A,00H	;initialize A = 0
+	LXI H,0900H	;addresses
+	LXI B,0000H	;# of 1
+	MVI D,00H	;# of numbers in range [10?,60?]
+START:
+	MOV M,A 	;save number in memory
+	MOV E,A 	;temporsry save
+	JMP ONES
+FINONES:
+	MOV A,E		;restore A
+	JMP NUMBERS
+NEXTNUM:
+
+	INX H 		;increment address
+	INR A 		;increment number
+	CPI 00H 	;if number = 256 (100->00)
+	JZ EXIT 	;end 
+	JMP START
+
+ONES:			;counts # of 1
+
+	STC			;set carry = 1
+	CMC			;complemnt carry. now CY = 0
+	RAR			;put lsb in carry
+	JNC NEXT		;if not 1 skip next step
+	INX B			;increment B
+NEXT:
+
+	CPI 00H		;compare acc to 0
+	JZ FINONES 		;if zero finished counting ones
+	JMP ONES		;else repeat
+
+NUMBERS:		;counts # of numbers in range [10?,60?]
+	CPI 10H	;A<10H?
+	JC NEXTNUM	;if yes
+	CPI 60H
+	JC INCRN	;A<60H ?
+	JNZ NEXTNUM 	;if not
+INCRN: 
+
+	INR D
+	JMP NEXTNUM
+EXIT:
+	RST 1
+	END

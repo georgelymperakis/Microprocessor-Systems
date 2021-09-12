@@ -1,0 +1,75 @@
+;Exercise 2
+;In this exercise we going to cretate a system
+;that controls automatic lights
+
+;The main functions do the following:
+;	1ST_OFF: Initial state with the switch in off state
+;	1ST_ON:  waits for the switch to go off
+;	2ND_OFF: turs on the lights when we turn the switch off after it was on	
+;	2ND_ON ; resets the timer and keeps the lights on when we turn the 
+;		  switch on and off with open lights
+
+	MVI A,FFH
+	STA 3000H
+	MVI D,C8H		; 20 secs=200*0,1 secs (200=C8H)
+	LXI B,0190H	;delay 100 ms{use 0064H to work without
+			; extra delay or increadse delay from the bar}
+START:
+	LDA 2000H	;load switch status to accumulator	
+	ANI 80H	;leave only MSB (80H = 100000000B)	
+	CPI 00H 	;if MSB is off
+	JZ 1ST_OFF	;then go to 1st_off
+	JMP START	;else restart
+1ST_OFF:
+			
+	LDA 2000H	;load switch status to accumulator	
+	ANI 80H	;leave only MSB (80H = 100000000B)	
+	CPI 80H	;if MSB is on			
+	JZ 1ST_ON	;then go to 1st_off
+	JMP 1ST_OFF	;else repeat
+1ST_ON:	
+				
+	LDA 2000H	;load switch status to accumulator	
+	ANI 80H	;leave only MSB (80H = 100000000B)	
+	CPI 00H 	;if MSB is off	
+	JZ 2ND_OFF	;then go to 2nd_off
+	JMP 1ST_ON	;else repeat
+
+2ND_OFF:		
+	LDA 2000H	;load switch status to accumulator	
+	ANI 80H	;leave only MSB (80H = 100000000B)	
+	CPI 80H	;if MSB is on			
+	JZ 2ND_ON	;then go to 2nd_on
+	MVI A,00H	;else make accumulator zero (11111111 in reverse logic)		
+	STA 3000H	;turn on the lights		
+	CALL DELB	;delay
+	DCR D 		;decrement seconds	
+	MOV A,D	;move seconds to accumulator
+	CPI 00H 	;compare accumulator to zero	
+	JNZ 2ND_OFF	;if not zero repeat
+	MVI A,FFH	;else make accumulator 11111111(00000000 in reverse logic)	
+	STA 3000H	;turn off the lights
+	MVI D,C8H	;reset timer
+	JMP 1ST_OFF	;go from the beginning
+
+2ND_ON:			
+	LDA 2000H	;load switch status to accumulator	
+	ANI 80H	;leave only MSB (80H = 100000000B)	
+	CPI 00H 	;if MSB is off	
+	JZ RESTART	;reset timer and turn the lights on	
+	MVI A,00H	;else make accumulator zero (11111111 in reverse logic)		
+	STA 3000H	;turn on the lights
+	CALL DELB	;delay
+	DCR D		;decrement seconds	
+	MOV A,D	;move seconds to accumulator
+	CPI 00H	;compare accumulator to zero	
+	JNZ 2ND_ON	;if not zero repeat
+	MVI A,FFH	;else make accumulator 11111111(00000000 in reverse logic)	
+	STA 3000H	;turn off the lights
+	MVI D,C8H	;reset timer
+	JMP 1ST_OFF	;go from the beginning
+RESTART:
+	MVI D,C8H	;reset timer	
+	JMP 2ND_OFF	;keep the lights on
+	
+	END

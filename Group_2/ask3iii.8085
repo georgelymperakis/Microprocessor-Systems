@@ -1,0 +1,222 @@
+;Exercise 3iii.
+;The below program read the pressed button
+;(without using the routine KIND) and depict 
+;the character in the 2 MSB 7-segment Display port 
+
+START:
+	IN 10H
+
+
+;The above code check every line horizontal 
+;and if it finds the buttom then check which from 
+;the 3 is
+
+
+;Check line 0
+;----------------------------------------------------------------
+LINE_0:
+	MVI A,FEH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,86H
+	CPI 06H
+	JZ PRINT
+
+	MVI C,85H
+	CPI 05H
+	JZ PRINT
+
+;Check line 1
+;----------------------------------------------------------------	
+LINE_1:
+	MVI A,FDH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,84H
+	CPI 06H
+	JZ PRINT
+
+	MVI C,82H
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,80H
+	CPI 05H
+	JZ PRINT
+
+;Check line 2
+;----------------------------------------------------------------
+LINE_2:
+	MVI A,FBH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,00H
+	CPI 06H
+	JZ PRINT
+
+	MVI C,81H
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,83H
+	CPI 05H
+	JZ PRINT
+
+;Check line 3
+;----------------------------------------------------------------
+LINE_3:
+
+	MVI A,F7H
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,01H
+	CPI 06H
+	JZ PRINT
+
+	MVI C,03H
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,02H
+	CPI 05H
+	JZ PRINT
+
+;Check line 4
+;----------------------------------------------------------------
+LINE_4:
+
+	MVI A,EFH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,04H
+	CPI 06H
+	JZ PRINT
+
+	MVI C,06H
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,05H
+	CPI 05H
+	JZ PRINT
+
+;Check line 5
+;----------------------------------------------------------------
+LINE_5:
+
+	MVI A,DFH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,07H
+	CPI 06H
+	JZ PRINT
+
+	MVI C,09H
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,08H
+	CPI 05H
+	JZ PRINT
+
+;Check line 6
+;----------------------------------------------------------------
+LINE_6:
+
+	MVI A,BFH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,0AH
+	CPI 06H
+	JZ PRINT
+
+	MVI C,0CH
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,0BH
+	CPI 05H
+	JZ PRINT
+
+;Check line 7
+;----------------------------------------------------------------
+LINE_7:
+	MVI A,7FH
+	STA 2800H
+	LDA 1800H
+	ANI 07H
+
+	MVI C,0DH
+	CPI 06H
+	JZ PRINT
+
+	MVI C,0FH
+	CPI 03H
+	JZ PRINT
+	
+	MVI C,0EH
+	CPI 05H
+	JZ PRINT
+
+	JMP START
+
+;Now the has come to print the result
+;----------------------------------------------------------------
+
+PRINT:
+	LXI H,0B00H
+	MVI B,04H
+
+;Loop which print the empty character on the first 4 ports
+LOOP_1:
+	MVI M,10H
+	INX H
+	DCR B
+	JNZ LOOP_1
+
+;Code which stores the result in memory
+	LXI H,0B04H
+	MOV A,C
+	ANI 0FH
+	MOV M,A
+
+	INX H
+	MOV A,C
+	ANI F0H
+
+	RLC
+	RLC
+	RLC
+	RLC
+	
+	MOV M,A
+
+;Call the 2 routines which is going to read the reslut and
+;the going to make the job easier
+
+	LXI D,0B00H
+	CALL STDM
+	CALL DCD
+
+	JMP START	;return back in order to read the next input
+END
+;----------------------------------------------------------------
+
+
+
+
+

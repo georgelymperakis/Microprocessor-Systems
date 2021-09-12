@@ -1,0 +1,56 @@
+;Exercise 3 -> i.
+;We will illustrate the function by using an example
+;10110100 (Input/Dip Switches) -> 00000X00 (Output/LEDS)
+
+START:
+	LDA 2000H	;Read Input
+	MOV C,A	
+
+	MVI B,00H
+	MVI D,01H
+
+	CPI 00H	;Check if the input is zero
+	JZ ZERO_INPUT	;Print that special case
+	
+;Find the index where is the first Open Led
+FIND_INDEX:	
+	ANA D		
+	CMP D
+	JNC CONTINUE	;If you have the answer then leave
+	INR B
+	MOV A,C
+	RRC
+	MOV C,A
+	JMP FIND_INDEX
+	
+CONTINUE:
+	MVI A,01H ;Initialize
+
+;Put 1 the bit in which there is the right led
+LOOP1:
+	MOV C,A
+	MOV A,B
+	CPI 00H
+	JZ PRINT
+	DCR B
+	MOV A,C
+	RLC
+	JMP LOOP1
+
+;Turn on led	
+PRINT:
+	MOV A,C
+	CMA
+	STA 3000H
+
+	JMP START
+
+;Print the special input
+ZERO_INPUT:		
+	XRA A
+	CMA
+	STA 3000H
+
+	JMP START	
+
+END

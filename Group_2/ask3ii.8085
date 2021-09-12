@@ -1,0 +1,43 @@
+;Exercise 3ii
+;Wait somebody to press a number in his keyboard
+;and turn on the specific led and the upper one
+;i.e. 3 -> XXXXX00
+
+START:
+	CALL KIND	;Routine which read the keyboard
+
+	CPI 00H	;Chech if the input = 0 (Special Case)
+	JZ LEAVE 	;Go to turn off all the leds
+
+	CPI 09H	;Check if its bigger than 9
+	JNC LEAVE	;and if it's true turn off again all the leds
+
+	MOV B,A
+	MVI C,00H	;initialiaze register c = 0
+
+MAKE_OUTPUT:		;Loop which calculate the output by 
+	MOV A,B
+	CPI 01H
+	JZ PRINT
+	DCR A
+	MOV B,A
+	MOV A,C
+	STC
+	RAL
+	MOV C,A
+	JMP MAKE_OUTPUT
+	
+
+;Turn on the leds
+PRINT:	
+	MOV A,C
+	STA 3000H
+
+	JMP START
+
+;Print for incorrect input
+LEAVE:
+	MVI A,FFH
+	STA 3000H
+	JMP START
+END
