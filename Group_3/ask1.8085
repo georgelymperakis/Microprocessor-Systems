@@ -1,0 +1,115 @@
+;Exercise 1
+
+
+
+
+;Main Function
+MAIN:
+	IN 10H
+
+	MVI A,0DH
+	SIM 
+	EI	
+
+;Wait for an Interrupt
+WAIT:
+	JMP WAIT
+
+INTR_ROUTINE:
+	JMP RST6.5
+
+;Routine that service the RST 6.5	
+RST6.5:
+	PUSH PSW
+	EI
+	MVI A,00H
+	STA 3000H
+
+	MVI H,06H
+	MVI L,00H
+
+;Make the time and refresh it
+DISPLAY_TIME:
+
+	MVI C,AFH
+L1:
+	CALL MAKE_OUTPUT
+	CALL DELA
+	DCR C	
+	JNZ L1
+
+
+
+	;LXI B,05FFH
+	;CALL DELB
+
+	MOV A,L
+	CPI 00H
+	JZ REFRESH
+	DCR L
+
+CONT:
+	MOV A,H
+	CPI 00H
+	JZ CHECK
+	JMP DISPLAY_TIME
+
+
+
+;refresh the 2 counters
+REFRESH:
+	MOV L,A
+	MOV A,H
+	CPI 00H
+	JZ EXIT
+	MOV H,A	
+	MVI L,09H
+	DCR H
+	JMP CONT
+
+;Check if the remainder time
+;is zero 
+CHECK:
+	MOV A,L
+	CPI 00H
+	JNZ DISPLAY_TIME
+
+;If the remainder time is zero
+;then it's time to switch off 
+;the leds and leave
+EXIT:
+	CMA
+	STA 3000H
+	POP PSW
+	RET
+
+;Print the output in the
+;Seven Segment Displays
+MAKE_OUTPUT:
+	PUSH PSW
+	PUSH H
+
+	LXI D,0A00H
+	MVI A,10H
+	STA 0A00H
+	STA 0A01H
+	STA 0A04H
+	STA 0A05H	
+
+	MOV A,H
+	STA 0A03H
+	MOV A,L
+	STA 0A02H
+
+	CALL STDM
+	CALL DCD
+
+	POP H
+	POP PSW
+
+	RET
+END
+
+
+
+

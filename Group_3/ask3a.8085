@@ -1,0 +1,21 @@
+SWAP Nible MACRO Q
+
+	PUSH PSW
+	
+	MOV A,Q
+	RLC
+	RLC
+	RLC
+	RLC
+	MOV Q,A
+
+	MOV A,M
+	RLC
+	RLC
+	RLC
+	RLC
+	MOV M,A
+
+	POP PSW
+
+ENDM

@@ -1,0 +1,82 @@
+;Exercise 2
+
+
+;Main Function
+MAIN:
+	IN 10H
+
+	MVI A,0DH
+	SIM 
+	EI	
+
+; empty 7segment display
+	LXI D,0A00H
+	MVI A,10H
+	STA 0A00H
+	STA 0A01H
+	STA 0A02H
+	STA 0A03H
+	STA 0A04H
+	STA 0A05H
+	CALL STDM
+	CALL DCD
+
+	MVI D,50H	; set ?1 = 50H (sample value)
+	MVI E,A0H	; set K2 = A0H (sample value)
+
+;Wait for an Interrupt
+WAIT:
+	JMP WAIT
+
+INTR_ROUTINE:
+	JMP RST6.5
+
+;Routine that service the RST 6.5	
+RST6.5:
+
+
+	CALL KIND	; read lsb
+	MOV B,A	; move lsb to B
+	STA 0A00H
+	CALL KIND	; read msb
+	STA 0A01H
+	RLC
+	RLC
+	RLC
+	RLC
+	ADD B		; create 2 digit number
+	CMP D
+	JC ZEROTOK1
+	JZ ZEROTOK1
+	JMP K1TOFFH
+
+ZEROTOK1:		;0 <= x <= K1
+	MVI A,01H
+	JMP PRINT
+
+K1TOFFH:		;K1 < x <=FFH
+	CMP E
+	JC K1TOK2
+	JZ K1TOK2
+	JMP K2TOFFH
+
+K1TOK2:		;K1 < x <=K2
+	MVI A,02H
+	JMP PRINT
+
+K2TOFFH:		;K1 < x <= FFH
+	MVI A,04H
+PRINT:
+	CMA
+	STA 3000H
+
+	PUSH D
+	LXI D,0A00H
+			
+	CALL STDM
+	POP D
+	EI
+
+	CALL DCD	
+
+END

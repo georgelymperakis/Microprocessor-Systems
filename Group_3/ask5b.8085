@@ -1,0 +1,65 @@
+;Exercise 5
+
+START:
+	MVI C,40H
+
+READING:
+	MOV A,C
+	CPI 00H
+	JZ EXIT
+
+WAIT_ONE:		;wait for bit = 1
+	LDA 2000H
+	MOV B,A
+	ANI 80H
+	CPI 80H
+	JNZ WAIT_ONE
+
+	MOV A,C
+	ANI 01H
+	CPI 00H
+	JNZ READ_4MSB
+	JMP READ_4LSB
+
+;Read the 4 MSB
+READ_4MSB:
+	LDA 20H
+	ANI 0FH
+	RLC
+	RLC
+	RLC
+	RLC
+
+	ORA B
+	MVI D,00H
+	MOV E,A
+	DAD D
+
+	JMP WAIT_ZERO
+
+;Read the 4 LSB 
+READ_4LSB:
+	LDA 20H
+	ANI 0FH 
+	MOV B,A
+
+WAIT_ZERO:			;wait for bit = 0	
+	LDA 20H
+	ANI 80H
+	CPI 00H
+	JNZ WAIT_ZERO
+
+	DCR C
+	JMP READING
+
+EXIT:
+	MOV A,L
+	ANI 1FH 
+	MOV L,A
+
+	DAD H
+	DAD H
+	DAD H
+HLT
+
+END

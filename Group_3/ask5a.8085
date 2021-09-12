@@ -1,0 +1,73 @@
+;Exercise 5
+
+;Main Function
+START:
+	MVI A,0DH
+	SIM
+	MVI C,40H
+	LXI H,0000H
+	EI
+
+;Wait for the 64 interrupts
+;and after find the average value
+;and pause
+ADDR:
+	MOV A,C
+	CPI 00H
+	JNZ ADDR
+	
+	MOV A,L
+	ANI 1FH 
+	MOV L,A
+
+	DI
+	DAD H
+	DAD H
+	DAD H
+
+	HLT
+	
+INTR_ROUTINE:
+	JMP RST6.5
+
+;Routine for the RST6.5
+RST6.5:
+	PUSH PSW
+	
+	MOV A,C
+	ANI 01H
+	CPI 00H
+	JNZ READ_4MSB
+	JMP READ_4LSB
+
+;Read the 4 MSB
+READ_4MSB:
+	IN 20H
+	ANI 0FH
+	RLC
+	RLC
+	RLC
+	RLC
+
+	ORA B
+	MVI D,00H
+	MOV E,A
+	DAD D
+	
+	JMP EXIT
+
+;Read the 4 LSB
+READ_4LSB:
+	IN 20H
+	ANI 0FH 
+	MOV B,A
+
+;Decrease the counter and return to 
+;waiting loop
+EXIT:
+	DCR C
+
+	POP PSW
+	EI
+	RET
+END
