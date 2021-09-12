@@ -1,0 +1,80 @@
+READ_INPUT:
+
+	LDA 2000H     ;load input in A
+	MOV D,A	;D <- A ,make a copy of input
+
+	CPI 63H	;Compare the number with 99
+	JNC BIGGER_99 ;If it's bigger then it is a special case
+
+	MVI B,FFH	;FFH has Complement of 2 -> -1
+
+DECA:	
+	
+	INR B		;B <- B + 1
+	SUI 0AH	;A <- A - 10
+	JNC DECA	;Do it again if the result is positive
+	
+	ADI 0AH	;Correct the negative result by adding 10
+	MOV C,A	;Store for now the result in reg C
+	
+	MOV A,B	;Bring in Accumulator the B
+
+	RLC		;Rotate left accumulator		
+	RLC		;for
+	RLC		;four
+	RLC		;times
+
+ 	ADD C		;A <- A + C
+	CMA		;A <- A' (complementary)
+	LXI B,01F4H	;put delay for 0.5 second
+
+	STA 3000H	;save in output port the result
+	LXI B,01F4H	;put delay for 0.5 second
+
+	JMP READ_INPUT ;Return to read the next input
+	
+
+BIGGER_99:
+	
+	CPI C8H	;Check if input > 200
+	JNC BIGGER_199 ;If it's true then go to print it properly
+
+	LXI B,01F4H   ;Put delay for 0.5 second
+
+	JMP LOWER_LED ;Go to print the result
+	
+BIGGER_199:
+
+	LXI B,01F4H   ;put delay for 0.5 second
+	JMP UPPER_LED ;Go to print the result
+
+	
+
+UPPER_LED:
+ 
+	MVI A,0FH      ;Put the mask in accumulator
+	STA 3000H      ;Light the MSB LEDS
+	LXI B,01F4H    ;Put delay for 0.5 second
+	MVI A,FFH	 ;Put a new mask in A to close the LEDS
+	STA 3000H      ;Close the MSB LEDS
+	LXI B,01F4H    ;Put delay for 0.5 second
+     	LDA 2000H      ;Read the Input port again
+ 	CMP D          ;Check if it has changed
+	JNZ READ_INPUT ;If it is true the return
+	JMP UPPER_LED  ;Else continue to open-close the LEDS
+
+
+LOWER_LED:
+	
+	MVI A,F0H	;Put the mask in accumulator
+	STA 3000H     ;Light the LSB LEDS
+	LXI B,01F4H   ;Put delay for 0.5 second
+	MVI A,FFH     ;Put a new mask in A to close the LEDS
+	STA 3000H      ;Close the MSB LEDS
+	LXI B,01F4H   ;Put delay for 0.5 second
+	LDA 2000H     ;Read the Input port again
+	CMP D         ;Check if it has changed
+	JNZ READ_INPUT ;If it is true the return
+	JMP LOWER_LED ;Else continue to open-close the LEDS
+
+END

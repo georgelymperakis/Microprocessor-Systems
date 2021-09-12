@@ -1,0 +1,37 @@
+	IN 10H
+	LXI B,01F4H	;Delay 500ms = 0x1F4
+	MVI E,01H	;Set Initial LED to LSB
+
+START:
+
+	LDA 2000H	;load inout to accumulator
+	MOV D,A		;store input to D
+	RRC			;Shift Right (to carry LSB)
+	JC START	;while LSB switch is on endless loop
+	CALL DELB	;Delay 0,5s
+	MOV A,D		;load D to accumulator
+	RLC			;Shift Left (to carry MSB)
+	JC GORIGHT	;if MSB switch is on use right circle 
+
+GOLEFT:			;Left Circle
+
+	MOV A,E		;load LED to accumulator
+	CMA			;reverse logic
+	STA 3000H	;move acumulator to output
+	CMA			;reverse logic
+	RLC			;shift left
+	MOV E,A		;store next LED to E
+	JMP START	
+
+GORIGHT:		;Right Circle {Similar to Left}
+
+	MOV A,E
+	CMA
+	STA 3000H
+	CMA
+	RRC
+	MOV E,A
+	JMP START
+	
+	END
+

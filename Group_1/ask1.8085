@@ -1,0 +1,19 @@
+START:
+
+	MVI C,08H ; C <- 8
+	LDA 2000H	; Read Switches
+
+LABEL1:
+
+	RAL		; Make a left rotation 
+	JC LABEL2	; If CY == 1 jump to LABEL 2 else continue
+	DCR C	      ; C <- C - 1
+	JNZ LABEL1  ; If Z != 0 jump to LABEL 1 else continue
+
+LABEL2:
+
+	MOV A,C   ; A <- C
+	CMA 		; A <- A’
+	STA 3000H	; Move A Data in output port
+	RST 1	; Restart (Interrupt)
+END
